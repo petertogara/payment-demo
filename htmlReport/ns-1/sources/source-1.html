@@ -1,0 +1,220 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > CustomerServiceImpl</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">com.petmuc.payment.service.impl</a>
+</div>
+
+<h1>Coverage Summary for Class: CustomerServiceImpl (com.petmuc.payment.service.impl)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">CustomerServiceImpl</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    70%
+  </span>
+  <span class="absValue">
+    (7/10)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (2/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    79,3%
+  </span>
+  <span class="absValue">
+    (23/29)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package com.petmuc.payment.service.impl;
+&nbsp;
+&nbsp;import com.petmuc.payment.entity.Customer;
+&nbsp;import com.petmuc.payment.entity.Payment;
+&nbsp;import com.petmuc.payment.exception.CustomerAlreadyExistsException;
+&nbsp;import com.petmuc.payment.exception.CustomerNotFoundException;
+&nbsp;import com.petmuc.payment.exception.PaymentNotFoundException;
+&nbsp;import com.petmuc.payment.exception.ServiceException;
+&nbsp;import com.petmuc.payment.repository.CustomerRepository;
+&nbsp;import com.petmuc.payment.repository.PaymentRepository;
+&nbsp;import com.petmuc.payment.service.CustomerService;
+&nbsp;import org.springframework.stereotype.Service;
+&nbsp;
+&nbsp;import java.util.List;
+&nbsp;import org.springframework.dao.DataIntegrityViolationException;
+&nbsp;import org.springframework.transaction.annotation.Transactional;
+&nbsp;
+&nbsp;import javax.validation.Valid;
+&nbsp;
+&nbsp;@Service
+&nbsp;public class CustomerServiceImpl implements CustomerService {
+&nbsp;    private final CustomerRepository customerRepository;
+&nbsp;    private final PaymentRepository paymentRepository;
+&nbsp;
+<b class="fc">&nbsp;    public CustomerServiceImpl(CustomerRepository customerRepository, PaymentRepository paymentRepository) {</b>
+<b class="fc">&nbsp;        this.customerRepository = customerRepository;</b>
+<b class="fc">&nbsp;        this.paymentRepository = paymentRepository;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    @Transactional
+&nbsp;    public Customer createCustomer(@Valid Customer customer) {
+&nbsp;        try {
+<b class="fc">&nbsp;            return customerRepository.save(customer);</b>
+<b class="fc">&nbsp;        } catch (DataIntegrityViolationException e) {</b>
+<b class="fc">&nbsp;            throw new CustomerAlreadyExistsException(&quot;Customer with this email already exists&quot;);</b>
+<b class="fc">&nbsp;        } catch (Exception e) {</b>
+<b class="fc">&nbsp;            throw new ServiceException(&quot;An error occurred while creating the customer&quot;);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    @Transactional
+&nbsp;    public Customer updateCustomer(Long id, @Valid Customer customer) {
+<b class="fc">&nbsp;        Customer existing = customerRepository.findById(id)</b>
+<b class="fc">&nbsp;                .orElseThrow(() -&gt; new CustomerNotFoundException(&quot;Customer not found with id: &quot; + id));</b>
+&nbsp;
+<b class="fc">&nbsp;        existing.setName(customer.getName());</b>
+<b class="fc">&nbsp;        existing.setEmail(customer.getEmail());</b>
+<b class="fc">&nbsp;        return customerRepository.save(existing);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void deleteCustomer(Long id) {
+<b class="fc">&nbsp;        if (!customerRepository.existsById(id)) {</b>
+<b class="fc">&nbsp;            throw new CustomerNotFoundException(&quot;Customer not found with id: &quot; + id);</b>
+&nbsp;        }
+<b class="fc">&nbsp;        customerRepository.deleteById(id);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public Customer findCustomerById(Long id) {
+<b class="fc">&nbsp;        return customerRepository.findById(id)</b>
+<b class="fc">&nbsp;                .orElseThrow(() -&gt; new CustomerNotFoundException(&quot;Customer not found with id: &quot; + id));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public List&lt;Customer&gt; findAllCustomers() {
+<b class="fc">&nbsp;        return customerRepository.findAll();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public List&lt;Customer&gt; findCustomersByName(String name) {
+<b class="nc">&nbsp;        return customerRepository.findByName(name);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public Payment findPaymentById(Long id) {
+<b class="nc">&nbsp;        return paymentRepository.findById(id)</b>
+<b class="nc">&nbsp;                .orElseThrow(() -&gt; new PaymentNotFoundException(&quot;Payment not found with id: &quot; + id));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    @Transactional
+&nbsp;    public Payment makePayment(Long customerId, @Valid Payment payment) {
+<b class="fc">&nbsp;        Customer customer = customerRepository.findById(customerId)</b>
+<b class="fc">&nbsp;                .orElseThrow(() -&gt; new CustomerNotFoundException(&quot;Customer not found with id: &quot; + customerId));</b>
+&nbsp;
+<b class="fc">&nbsp;        payment.setCustomer(customer);</b>
+&nbsp;
+&nbsp;        try {
+<b class="fc">&nbsp;            return paymentRepository.save(payment);</b>
+<b class="nc">&nbsp;        } catch (Exception e) {</b>
+<b class="nc">&nbsp;            throw new ServiceException(&quot;An error occurred while saving the payment&quot;);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public List&lt;Payment&gt; findPaymentsByCustomerId(Long customerId) {
+<b class="nc">&nbsp;        return paymentRepository.findByCustomerId(customerId);</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-09-29 04:45</div>
+</div>
+</body>
+</html>

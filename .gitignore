@@ -1,0 +1,67 @@
+# HELP.md
+HELP.md
+
+# Maven target directory
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+### STS (Spring Tool Suite) ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### IntelliJ IDEA ###
+.idea/
+*.iws
+*.iml
+*.ipr
+
+### macOS ###
+.DS_Store
+.env
+
+### Windows ###
+Thumbs.db
+
+### Temporary Files ###
+*.swp
+*.tmp
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### VS Code ###
+.vscode/
+
+### Spring Boot ###
+# Exclude application configuration files
+*.properties
+*.yml
+*.yml~
+!docker-compose.yml
+
+# Ignore compiled Java classes
+*.class
+
+# Ignore logs
+*.log
+
+# Ignore jar and war files
+*.jar
+*.war
+
+# H2 database files
+*.h2.db
