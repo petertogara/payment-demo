@@ -20,6 +20,9 @@ import javax.validation.Valid;
 
 @Service
 public class CustomerServiceImpl implements CustomerService {
+    private static final String CUSTOMER_NOT_FOUND_MESSAGE = "Customer not found with id: ";
+    public static final String PAYMENT_NOT_FOUND_MESSAGE = "Payment not found with id: ";
+    public static final String CUSTOMER_ALREADY_EXISTS_MESSAGE = "Customer with this email %s already exists";
     private final CustomerRepository customerRepository;
     private final PaymentRepository paymentRepository;
 
@@ -39,7 +42,7 @@ public class CustomerServiceImpl implements CustomerService {
     @Transactional
     public Customer updateCustomer(Long id, @Valid Customer customer) {
         Customer existing = customerRepository.findById(id)
-                .orElseThrow(() -> new CustomerNotFoundException("Customer not found with id: " + id));
+                .orElseThrow(() -> new CustomerNotFoundException(CUSTOMER_NOT_FOUND_MESSAGE + id));
 
         existing.setName(customer.getName());
         existing.setEmail(customer.getEmail());
@@ -49,7 +52,7 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public void deleteCustomer(Long id) {
         if (!customerRepository.existsById(id)) {
-            throw new CustomerNotFoundException("Customer not found with id: " + id);
+            throw new CustomerNotFoundException(CUSTOMER_NOT_FOUND_MESSAGE + id);
         }
         customerRepository.deleteById(id);
     }
@@ -57,7 +60,7 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public Customer findCustomerById(Long id) {
         return customerRepository.findById(id)
-                .orElseThrow(() -> new CustomerNotFoundException("Customer not found with id: " + id));
+                .orElseThrow(() -> new CustomerNotFoundException(CUSTOMER_NOT_FOUND_MESSAGE + id));
     }
 
     @Override
@@ -68,14 +71,14 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public Payment findPaymentById(Long id) {
         return paymentRepository.findById(id)
-                .orElseThrow(() -> new PaymentNotFoundException("Payment not found with id: " + id));
+                .orElseThrow(() -> new PaymentNotFoundException(PAYMENT_NOT_FOUND_MESSAGE + id));
     }
 
     @Override
     @Transactional
     public Payment makePayment(Long customerId, @Valid Payment payment) {
         Customer customer = customerRepository.findById(customerId)
-                .orElseThrow(() -> new CustomerNotFoundException("Customer not found with id: " + customerId));
+                .orElseThrow(() -> new CustomerNotFoundException(CUSTOMER_NOT_FOUND_MESSAGE + customerId));
 
         payment.setCustomer(customer);
 
@@ -96,7 +99,7 @@ public class CustomerServiceImpl implements CustomerService {
     private void checkCustomerExists(Customer customer) {
         boolean exists = customerRepository.findCustomerByEmail(customer.getEmail()).isPresent();
         if (exists) {
-            throw new CustomerAlreadyExistsException(String.format("Customer with this email %s already exists", customer.getEmail()));
+            throw new CustomerAlreadyExistsException(String.format(CUSTOMER_ALREADY_EXISTS_MESSAGE, customer.getEmail()));
         }
     }
 

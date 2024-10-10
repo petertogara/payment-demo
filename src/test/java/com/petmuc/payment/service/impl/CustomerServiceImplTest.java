@@ -24,6 +24,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+import static com.petmuc.payment.service.impl.CustomerServiceImpl.CUSTOMER_ALREADY_EXISTS_MESSAGE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -49,7 +50,7 @@ public class CustomerServiceImplTest {
         }
 
         @Test
-        public void shouldCreateCustomerSuccessfully() {
+        void shouldCreateCustomerSuccessfully() {
 
             Mockito.when(customerRepository.save(any(Customer.class))).thenReturn(customer);
             Customer createdCustomer = customerService.createCustomer(customer);
@@ -58,7 +59,7 @@ public class CustomerServiceImplTest {
         }
 
         @Test
-        public void shouldThrowGenericExceptionAndFailWhenCreatingCustomer() {
+        void shouldThrowGenericExceptionAndFailWhenCreatingCustomer() {
 
             Mockito.when(customerRepository.save(any(Customer.class))).thenThrow(ConstraintViolationException.class);
             assertThrows(Exception.class, () -> customerService.createCustomer(customer));
@@ -66,7 +67,7 @@ public class CustomerServiceImplTest {
         }
 
         @Test
-        public void shouldThrowCustomerAlreadyExistsExceptionWhenCreatingCustomer() {
+        void shouldThrowCustomerAlreadyExistsExceptionWhenCreatingCustomer() {
 
             customer = new Customer(null, "John Doe", "john.doe@example.com");
             Mockito.when(customerRepository.findCustomerByEmail(customer.getEmail()))
@@ -75,7 +76,7 @@ public class CustomerServiceImplTest {
             CustomerAlreadyExistsException thrownException = assertThrows(CustomerAlreadyExistsException.class, () -> customerService.createCustomer(customer));
 
             Mockito.verify(customerRepository, Mockito.times(1)).findCustomerByEmail(customer.getEmail());
-            assertEquals(String.format("Customer with this email %s already exists",customer.getEmail()), thrownException.getMessage());
+            assertEquals(String.format(CUSTOMER_ALREADY_EXISTS_MESSAGE,customer.getEmail()), thrownException.getMessage());
             Mockito.verify(customerRepository, Mockito.times(0)).save(any(Customer.class));
         }
 
@@ -91,7 +92,7 @@ public class CustomerServiceImplTest {
         }
 
         @Test
-        public void shouldUpdateCustomerSuccessfully() {
+        void shouldUpdateCustomerSuccessfully() {
 
             Customer updatedCustomer = new Customer(1L, "Janet Doe", "janet.doe@example.com");
 
@@ -119,7 +120,7 @@ public class CustomerServiceImplTest {
         }
 
         @Test
-        public void shouldThrowCustomerNotFoundExceptionWhenFindingCustomerById() {
+        void shouldThrowCustomerNotFoundExceptionWhenFindingCustomerById() {
 
             Mockito.when(customerRepository.findById(1L)).thenReturn(Optional.empty());
             assertThrows(CustomerNotFoundException.class, () -> customerService.updateCustomer(1L, customer));
@@ -128,7 +129,7 @@ public class CustomerServiceImplTest {
         }
 
         @Test
-        public void shouldFindCustomerByIdSuccessfully() {
+        void shouldFindCustomerByIdSuccessfully() {
 
             Mockito.when(customerRepository.findById(1L)).thenReturn(Optional.of(customer));
             Customer foundCustomer = customerService.findCustomerById(1L);
@@ -138,7 +139,7 @@ public class CustomerServiceImplTest {
         }
 
         @Test
-        public void shouldFindAllCustomerSuccessfully() {
+        void shouldFindAllCustomerSuccessfully() {
 
             List<Customer> customers = Arrays.asList(new Customer(1L, "John Doe", "john.doe@example.com"),
                     new Customer(2L, "Sam Chinogiya", "sam.chinogiya@example.com"),
@@ -164,7 +165,7 @@ public class CustomerServiceImplTest {
         }
 
         @Test
-        public void shouldDeleteCustomerSuccessfully() {
+        void shouldDeleteCustomerSuccessfully() {
 
             Mockito.when(customerRepository.existsById(customerId)).thenReturn(true);
             customerService.deleteCustomer(customerId);
@@ -172,7 +173,7 @@ public class CustomerServiceImplTest {
         }
 
         @Test
-        public void shouldThrowCustomerNotFoundExceptionWhenDeletingCustomer() {
+        void shouldThrowCustomerNotFoundExceptionWhenDeletingCustomer() {
 
             Mockito.when(customerRepository.existsById(customerId)).thenReturn(false);
             assertThrows(CustomerNotFoundException.class, () -> customerService.deleteCustomer(customerId));
@@ -196,7 +197,7 @@ public class CustomerServiceImplTest {
         }
 
         @Test
-        public void shouldMakePaymentSuccessfully() {
+        void shouldMakePaymentSuccessfully() {
 
             Mockito.when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer));
             Mockito.when(paymentRepository.save(any(Payment.class))).thenReturn(payment);
@@ -211,7 +212,7 @@ public class CustomerServiceImplTest {
         }
 
         @Test
-        public void shouldThrowCustomerNotFoundExceptionWhenMakingPaymentAndFail() {
+        void shouldThrowCustomerNotFoundExceptionWhenMakingPaymentAndFail() {
 
             Payment request = payment;
             request.setCustomer(null);
@@ -222,7 +223,7 @@ public class CustomerServiceImplTest {
         }
 
         @Test
-        public void shouldThrowServiceExceptionWhenMakingPaymentWithInexistentCustomerAndFail() {
+        void shouldThrowServiceExceptionWhenMakingPaymentWithInexistentCustomerAndFail() {
             Payment request = payment;
             request.setCustomer(null);
             Mockito.when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer));
@@ -233,7 +234,7 @@ public class CustomerServiceImplTest {
         }
 
         @Test
-        public void shouldFindPaymentsByCustomerIdSuccessfully() {
+        void shouldFindPaymentsByCustomerIdSuccessfully() {
 
             List<Payment> payments = Arrays.asList(new Payment(1L, "VISA", new BigDecimal("12000.00"), customer),
                     new Payment(2L, "PayPal", new BigDecimal("5800.90"), customer));
@@ -245,7 +246,7 @@ public class CustomerServiceImplTest {
         }
 
         @Test
-        public void shouldNotFindPaymentsByCustomerIdWithNoPaymentsLinked() {
+        void shouldNotFindPaymentsByCustomerIdWithNoPaymentsLinked() {
 
             List<Payment> payments = List.of();
 

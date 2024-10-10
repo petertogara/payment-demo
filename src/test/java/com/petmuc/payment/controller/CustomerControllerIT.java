@@ -1,5 +1,6 @@
 package com.petmuc.payment.controller;
 
+import static com.petmuc.payment.service.impl.CustomerServiceImpl.CUSTOMER_ALREADY_EXISTS_MESSAGE;
 import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -118,7 +119,7 @@ class CustomerControllerIT {
         Mockito.verify(customerRepository, times(1)).save(Mockito.any(Customer.class));
 
         Optional<Customer> savedCustomer = customerRepository.findCustomerByEmail(customerCaptor.getValue().getEmail());
-        assertThat(savedCustomer.isPresent()).isTrue();
+        assertThat(savedCustomer).isPresent();
         assertThat(savedCustomer.get().getName()).isEqualTo(customerCaptor.getValue().getName());
         assertThat(savedCustomer.get().getEmail()).isEqualTo(customerCaptor.getValue().getEmail());
 
@@ -139,7 +140,7 @@ class CustomerControllerIT {
                 .then()
                 .log().ifError()
                 .statusCode(409)
-                .body("detail", equalTo(String.format("Customer with this email %s already exists", customer.getEmail())))
+                .body("detail", equalTo(String.format(CUSTOMER_ALREADY_EXISTS_MESSAGE, customer.getEmail())))
                 .extract()
                 .response();
 
@@ -177,7 +178,7 @@ class CustomerControllerIT {
 
         Optional<Customer> existingCustomer = customerRepository.findById(savedCustomer.getId());
 
-        assertThat(existingCustomer.isPresent()).isTrue();
+        assertThat(existingCustomer).isPresent();
         assertThat(existingCustomer.get().getEmail()).isEqualTo(savedCustomer.getEmail());
         assertThat(existingCustomer.get().getName()).isEqualTo(savedCustomer.getName());
 

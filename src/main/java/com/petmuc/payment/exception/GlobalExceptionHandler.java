@@ -55,14 +55,10 @@ public class GlobalExceptionHandler {
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Validation failed");
         problemDetail.setInstance(URI.create(request.getRequestURI()));
         problemDetail.setTitle("Validation Error");
-
-        // Collect all validation errors
+        problemDetail.setDetail(e.getMessage());
         StringBuilder errors = new StringBuilder();
-        e.getBindingResult().getAllErrors().forEach(error -> {
-            errors.append(error.getDefaultMessage()).append("; ");
-        });
+        e.getBindingResult().getAllErrors().forEach(error -> errors.append(error.getDefaultMessage()).append("; "));
         problemDetail.setDetail(errors.toString());
-
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(problemDetail);
     }
 
