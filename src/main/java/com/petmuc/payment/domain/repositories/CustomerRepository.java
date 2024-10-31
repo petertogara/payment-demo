@@ -1,6 +1,6 @@
-package com.petmuc.payment.repository;
+package com.petmuc.payment.domain.repositories;
 
-import com.petmuc.payment.entity.Customer;
+import com.petmuc.payment.domain.models.Customer;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

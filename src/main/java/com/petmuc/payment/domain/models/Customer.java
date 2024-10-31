@@ -1,4 +1,4 @@
-package com.petmuc.payment.entity;
+package com.petmuc.payment.domain.models;
 
 import jakarta.persistence.*;
 

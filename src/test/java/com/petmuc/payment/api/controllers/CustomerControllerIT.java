@@ -1,6 +1,5 @@
-package com.petmuc.payment.controller;
+package com.petmuc.payment.api.controllers;
 
-import static com.petmuc.payment.service.impl.CustomerServiceImpl.CUSTOMER_ALREADY_EXISTS_MESSAGE;
 import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -10,9 +9,12 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 
-import com.petmuc.payment.entity.Customer;
-import com.petmuc.payment.repository.CustomerRepository;
-import com.petmuc.payment.service.impl.CustomerServiceImpl;
+import com.petmuc.payment.adapter.facades.impl.CustomerPaymentFacadeImpl;
+import com.petmuc.payment.config.NoSecurityConfig;
+import com.petmuc.payment.domain.models.Customer;
+import com.petmuc.payment.domain.repositories.CustomerRepository;
+import com.petmuc.payment.domain.services.impl.CustomerServiceImpl;
+import com.petmuc.payment.utils.MessageUtil;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 
@@ -24,15 +26,18 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@Import(NoSecurityConfig.class)
 class CustomerControllerIT {
 
     @LocalServerPort
@@ -41,9 +46,13 @@ class CustomerControllerIT {
     static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(
             "postgres:16-alpine"
     );
+    @Mock
+    private MessageUtil messageUtil;
+    @SpyBean
+    private CustomerServiceImpl customerService;
 
     @SpyBean
-    private CustomerServiceImpl customerServiceImpl;
+    private CustomerPaymentFacadeImpl customerPaymentFacade;
 
     @SpyBean
     private CustomerRepository customerRepository;
@@ -114,7 +123,8 @@ class CustomerControllerIT {
                 .response();
 
         ArgumentCaptor<Customer> customerCaptor = ArgumentCaptor.forClass(Customer.class);
-        Mockito.verify(customerServiceImpl, times(1)).createCustomer(customerCaptor.capture());
+        Mockito.verify(customerPaymentFacade, times(1)).createCustomer(customerCaptor.capture());
+        Mockito.verify(customerService, times(1)).createCustomer(customerCaptor.capture());
 
         Mockito.verify(customerRepository, times(1)).save(Mockito.any(Customer.class));
 
@@ -126,7 +136,7 @@ class CustomerControllerIT {
     }
 
     @Test
-    void shouldCreateCustomerThrowCustomerAlreadyExistsException() {
+    void shouldThrowCustomerAlreadyExistsExceptionWhenCreateCustomerWithExistingEmail() {
 
         Customer existingCustomer = new Customer(null, "Jane Doe", "jane@hellomail.com");
         customerRepository.save(existingCustomer);
@@ -140,12 +150,13 @@ class CustomerControllerIT {
                 .then()
                 .log().ifError()
                 .statusCode(409)
-                .body("detail", equalTo(String.format(CUSTOMER_ALREADY_EXISTS_MESSAGE, customer.getEmail())))
+                .body("detail", equalTo(messageUtil.getCustomerAlreadyExistsMessage(customer.getEmail())))
                 .extract()
                 .response();
 
         ArgumentCaptor<Customer> customerCaptor = ArgumentCaptor.forClass(Customer.class);
-        Mockito.verify(customerServiceImpl, times(1)).createCustomer(customerCaptor.capture());
+        Mockito.verify(customerPaymentFacade, times(1)).createCustomer(customerCaptor.capture());
+        Mockito.verify(customerService, times(1)).createCustomer(customerCaptor.capture());
         Mockito.verify(customerRepository, times(1)).findCustomerByEmail(customerCaptor.getValue().getEmail());
 
         assertThat(customerCaptor.getValue().getEmail()).isEqualTo(customer.getEmail());
@@ -159,6 +170,7 @@ class CustomerControllerIT {
 
         Customer savedCustomer = customerRepository.save(customer);
         assertNotNull(savedCustomer.getId());
+        final Long  customerId = savedCustomer.getId();
 
         given()
                 .pathParam("id", savedCustomer.getId())
@@ -173,10 +185,11 @@ class CustomerControllerIT {
                 .extract()
                 .response();
 
-        Mockito.verify(customerServiceImpl, times(1)).findCustomerById(savedCustomer.getId());
-        Mockito.verify(customerRepository, times(1)).findById(savedCustomer.getId());
+        Mockito.verify(customerPaymentFacade, times(1)).getCustomerById(customerId);
+        Mockito.verify(customerService, times(1)).getCustomerById(customerId);
+        Mockito.verify(customerRepository, times(1)).findById(customerId);
 
-        Optional<Customer> existingCustomer = customerRepository.findById(savedCustomer.getId());
+        Optional<Customer> existingCustomer = customerRepository.findById(customerId);
 
         assertThat(existingCustomer).isPresent();
         assertThat(existingCustomer.get().getEmail()).isEqualTo(savedCustomer.getEmail());
@@ -207,7 +220,8 @@ class CustomerControllerIT {
                 .response();
 
         ArgumentCaptor<Customer> customerCaptor = ArgumentCaptor.forClass(Customer.class);
-        Mockito.verify(customerServiceImpl, times(1)).updateCustomer(eq(savedCustomer.getId().longValue()), customerCaptor.capture());
+        Mockito.verify(customerPaymentFacade, times(1)).updateCustomer(eq(savedCustomer.getId().longValue()), customerCaptor.capture());
+        Mockito.verify(customerService, times(1)).updateCustomer(eq(savedCustomer.getId().longValue()), customerCaptor.capture());
         Mockito.verify(customerRepository, times(1)).findById(any());
         Mockito.verify(customerRepository, times(2)).save(customerCaptor.capture());
 

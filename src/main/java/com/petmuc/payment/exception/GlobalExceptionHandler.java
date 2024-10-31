@@ -41,6 +41,25 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(problemDetail);
     }
 
+    @ExceptionHandler(PaymentProcessingException.class)
+    public ResponseEntity<ProblemDetail> handlePaymentProcessingException(PaymentProcessingException e, HttpServletRequest request) {
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Payment Processing Error");
+        problemDetail.setInstance(URI.create(request.getRequestURI()));
+        problemDetail.setTitle("Payment Processing Error");
+        problemDetail.setDetail(e.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(problemDetail);
+    }
+
+    @ExceptionHandler(ReversalProcessingException.class)
+    public ResponseEntity<ProblemDetail> handlePaymentProcessingException(ReversalProcessingException e, HttpServletRequest request) {
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, "Reversal Processing Error");
+        problemDetail.setInstance(URI.create(request.getRequestURI()));
+        problemDetail.setTitle("Reversal Processing Error");
+        problemDetail.setDetail(e.getMessage());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(problemDetail);
+    }
+
+
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<ProblemDetail> handleEntityNotFoundException(EntityNotFoundException e, HttpServletRequest request) {
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, "Entity Not Found");
