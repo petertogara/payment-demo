@@ -2,7 +2,7 @@
 1. Structuring simple API
 2. Unit Tests
 3. Integration Tests using TestContainers
-4. How to apply Facade Design Pattern
+4. How to apply Design Pattern ()
 5. Clean code and adoption of DRY concept 
 6. SOLID full throttle
 
@@ -16,3 +16,4 @@
 - https://blog.cleancoder.com/uncle-bob/2014/05/08/SingleReponsibilityPrinciple.html
 - https://stackoverflow.blog/2020/03/02/best-practices-for-rest-api-design/
 
+Morre is coming ...
