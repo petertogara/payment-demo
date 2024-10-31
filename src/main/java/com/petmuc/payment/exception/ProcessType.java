@@ -1,22 +1,22 @@
 package com.petmuc.payment.exception;
 
+import com.petmuc.payment.utils.MessageUtil;
+
 public enum ProcessType {
     PAYMENT {
         @Override
-        public void handleError(String reference, String errorMessage) {
-            throw new PaymentProcessingException(generateErrorMessage(reference, "payment", errorMessage));
+        public void handleError(String reference, String errorMessage, MessageUtil messageUtil) {
+            final String detailedErrorMessage = messageUtil.getPaymentProcessingErrorMessage(reference, errorMessage);
+            throw new PaymentProcessingException(detailedErrorMessage);
         }
     },
     REVERSAL {
         @Override
-        public void handleError(String reference, String errorMessage) {
-            throw new ReversalProcessingException(generateErrorMessage(reference, "reversal", errorMessage));
+        public void handleError(String reference, String errorMessage, MessageUtil messageUtil) {
+            final String detailedErrorMessage = messageUtil.getReversalProcessingErrorMessage(reference, errorMessage);
+            throw new ReversalProcessingException(detailedErrorMessage);
         }
     };
 
-    public abstract void handleError(String reference, String errorMessage);
-
-    protected static String generateErrorMessage(String reference, String processType, String errorDetails) {
-        return String.format("Error processing %s for reference %s: %s", processType, reference, errorDetails);
-    }
+    public abstract void handleError(String reference, String errorMessage, MessageUtil messageUtil);
 }

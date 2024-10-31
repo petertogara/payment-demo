@@ -25,18 +25,15 @@ public class MessageUtil {
         return String.format(messageSource.getMessage("payment.not_found", null, Locale.getDefault()), id);
     }
 
-    public String getPaymentProcessingErrorMessage(String errorMessage) {
-        return String.format(messageSource.getMessage("payment.processing_error", null, Locale.getDefault()), errorMessage);
-    }
-
-    public String getReversalProcessingErrorMessage(String errorMessage) {
-        return String.format(messageSource.getMessage("payment.reversal_processing_error", null, Locale.getDefault()), errorMessage);
-    }
     public String getPaymentProcessingErrorMessage(String reference, String errorDetails) {
-        return String.format("Error processing payment for reference %s: %s", reference, errorDetails);
+        return String.format(messageSource.getMessage("payment.processing_error",null, Locale.getDefault()), reference, errorDetails);
     }
 
     public String getReversalProcessingErrorMessage(String reference, String errorDetails) {
-        return String.format("Error processing payment reversal for reference %s: %s", reference, errorDetails);
+        return String.format(messageSource.getMessage("payment.reversal_processing_error", null, Locale.getDefault()), reference, errorDetails);
+    }
+
+    public String getDefaultErrorMessage() {
+        return String.format(messageSource.getMessage("generic_error", null, Locale.getDefault()));
     }
 }

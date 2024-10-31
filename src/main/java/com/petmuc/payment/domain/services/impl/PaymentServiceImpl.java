@@ -1,22 +1,15 @@
 package com.petmuc.payment.domain.services.impl;
 
 import com.petmuc.payment.adapter.clients.RestClient;
-import com.petmuc.payment.api.dtos.PaymentRequest;
-import com.petmuc.payment.api.dtos.PaymentResponse;
-import com.petmuc.payment.api.dtos.ReversalRequest;
-import com.petmuc.payment.api.dtos.ReversalResponse;
+import com.petmuc.payment.api.dtos.*;
 import com.petmuc.payment.domain.models.Customer;
 import com.petmuc.payment.domain.models.Payment;
 import com.petmuc.payment.domain.repositories.PaymentRepository;
 import com.petmuc.payment.domain.services.CustomerService;
 import com.petmuc.payment.domain.services.PaymentService;
 import com.petmuc.payment.exception.PaymentNotFoundException;
-import com.petmuc.payment.exception.PaymentProcessingException;
-import com.petmuc.payment.exception.ReversalProcessingException;
+import com.petmuc.payment.exception.ProcessType;
 import com.petmuc.payment.utils.MessageUtil;
-import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -28,9 +21,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
-@Slf4j
 public class PaymentServiceImpl implements PaymentService {
-    private static final Logger LOGGER = LoggerFactory.getLogger(PaymentServiceImpl.class);
     private final MessageUtil messageUtil;
     private final RestClient restClient;
     private final CustomerService customerService;
@@ -72,27 +63,24 @@ public class PaymentServiceImpl implements PaymentService {
     private void processPayment(String reference, Long customerId, BigDecimal amount) {
         PaymentRequest request = new PaymentRequest(reference, customerId, amount.doubleValue());
         ResponseEntity<PaymentResponse> responseEntity = restClient.payment(request);
-        validatePaymentResponse(responseEntity);
-    }
-
-    private void validatePaymentResponse(ResponseEntity<PaymentResponse> responseEntity) {
-        if (responseEntity.getStatusCode() != HttpStatus.CREATED) {
-            String errorMessage = responseEntity.getBody() != null ? responseEntity.getBody().message() : "Unknown error occurred.";
-            throw new PaymentProcessingException(messageUtil.getPaymentProcessingErrorMessage(errorMessage));
-        }
+        validateResponse(responseEntity, reference, ProcessType.PAYMENT);
     }
 
     private void processPaymentReversal(String reference, BigDecimal amount) {
         ReversalRequest request = new ReversalRequest(reference,amount.doubleValue());
         ResponseEntity<ReversalResponse> responseEntity = restClient.paymentReversal(request);
-        validateReversalResponse(responseEntity);
+        validateResponse(responseEntity, reference, ProcessType.REVERSAL);
     }
 
-    private void validateReversalResponse(ResponseEntity<ReversalResponse> responseEntity) {
-        if (responseEntity.getStatusCode() != HttpStatus.CREATED) {
-            String errorMessage = responseEntity.getBody() != null ? responseEntity.getBody().message() : "Unknown error occurred.";
-            throw new ReversalProcessingException(messageUtil.getReversalProcessingErrorMessage(errorMessage));
+    private <T> void validateResponse(ResponseEntity<T> responseEntity, String reference, ProcessType processType) {
+        if (responseEntity.getStatusCode() == HttpStatus.CREATED) {
+            return;
         }
-    }
 
+        final String errorMessage = responseEntity.getBody() != null
+                ? ((ErrorResponse) responseEntity.getBody()).message()
+                : messageUtil.getDefaultErrorMessage();
+
+        processType.handleError(reference, errorMessage, messageUtil);
+    }
 }
