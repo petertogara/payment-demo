@@ -12,6 +12,7 @@
 - https://testcontainers.com/guides/testing-spring-boot-rest-api-using-testcontainers/
 - https://medium.com/@akshatsharma0610/facade-design-pattern-in-java-777005efc75f
 - https://www.geeksforgeeks.org/dry-dont-repeat-yourself-principle-in-java-with-examples/
+- https://www.digitalocean.com/community/conceptual-articles/s-o-l-i-d-the-first-five-principles-of-object-oriented-design
 - https://blog.cleancoder.com/uncle-bob/2014/05/08/SingleReponsibilityPrinciple.html
 - https://stackoverflow.blog/2020/03/02/best-practices-for-rest-api-design/
 
